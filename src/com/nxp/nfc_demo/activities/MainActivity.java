@@ -28,6 +28,8 @@
 package com.nxp.nfc_demo.activities;
 
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -42,12 +44,14 @@ import android.net.Uri;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Vibrator;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TabHost;
 import android.widget.TabHost.OnTabChangeListener;
@@ -60,7 +64,13 @@ import com.nxp.nfc_demo.fragments.NdefFragment;
 import com.nxp.nfc_demo.reader.Ntag_I2C_Demo;
 import com.nxp.ntagi2cdemo.R;
 
+
 public class MainActivity extends FragmentActivity {
+
+	//activity change code
+	Timer timer;
+
+
 	public final static String EXTRA_MESSAGE = "com.nxp.nfc_demo.MESSAGE";
 	public final static int AUTH_REQUEST = 0;
 	public static Ntag_I2C_Demo demo;
@@ -80,13 +90,13 @@ public class MainActivity extends FragmentActivity {
 	private static String boardFirmwareVersion = "";
 
 	private static Intent mIntent;
-	
+
 	// Reference to menu item for icon changing
 	private MenuItem mAuthMenuItem;
-	
+
 	// Current authentication state
 	private static int mAuthStatus;
-	
+
 	// Current used password
 	private static byte[] mPassword;
 
@@ -98,9 +108,14 @@ public class MainActivity extends FragmentActivity {
 		MainActivity.boardFirmwareVersion = boardFirmwareVersion;
 	}
 
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		//keep screen on
+
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
 		// Application package name to be used by the AAR record
 		PACKAGE_NAME = getApplicationContext().getPackageName();
@@ -234,7 +249,7 @@ public class MainActivity extends FragmentActivity {
 		if (mAdapter != null) {
 			mAdapter.disableForegroundDispatch(this);
 		}
-				
+
 		if (demo.isReady()) {
 			demo.finishAllTasks();
 		}
@@ -244,15 +259,15 @@ public class MainActivity extends FragmentActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
-		
+
 		// Update the Auth Status Icon
 		//updateAuthIcon(mAuthStatus);
-		
+
 		if (mAdapter != null) {
 			mAdapter.enableForegroundDispatch(this, mPendingIntent, null, null);
 		}
 	}
-	
+
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
@@ -260,7 +275,7 @@ public class MainActivity extends FragmentActivity {
 		mPassword = null;
 		mIntent = null;
 	}
-	
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 	    // Check which request we're responding to
@@ -280,6 +295,7 @@ public class MainActivity extends FragmentActivity {
 		// Set the pattern for vibration
 		long pattern[] = { 0, 100 };
 
+
 		// Set the initial auth parameters
 		//mAuthStatus = AuthStatus.Authenticated.getValue();
 		mPassword = null;
@@ -288,6 +304,7 @@ public class MainActivity extends FragmentActivity {
 		Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 		vibrator.vibrate(pattern, -1);
 		doProcess(nfc_intent);
+
 	}
 
 
@@ -313,13 +330,13 @@ public class MainActivity extends FragmentActivity {
 		{
 			demo.Auth(mPassword, AuthStatus.Protected_RW.getValue());
 		}
-		
+
 		// ===========================================================================
 		// LED Test
 		// ===========================================================================
 	/*	if (currTab.equalsIgnoreCase("leds")) {
-			// This demo is available even if the product is protected 
-			// as long as the SRAM is unprotected  			
+			// This demo is available even if the product is protected
+			// as long as the SRAM is unprotected
 			if(mAuthStatus == AuthStatus.Disabled.getValue()
 					|| mAuthStatus == AuthStatus.Unprotected.getValue()
 					|| mAuthStatus == AuthStatus.Authenticated.getValue()
@@ -333,7 +350,7 @@ public class MainActivity extends FragmentActivity {
 					LedFragment.setAnswer(getString(R.string.Tag_lost));
 				}
 			} else {
-				Toast.makeText(getApplicationContext(), "NTAG I2C Plus memory is protected", 
+				Toast.makeText(getApplicationContext(), "NTAG I2C Plus memory is protected",
 						Toast.LENGTH_LONG).show();
 				showAuthDialog();
 			}
@@ -343,7 +360,7 @@ public class MainActivity extends FragmentActivity {
 		// ===========================================================================
 		/*if (currTab.equalsIgnoreCase("ndef"))
 		{
-			// This demo is only available when the tag is not protected  
+			// This demo is only available when the tag is not protected
 			if(mAuthStatus == AuthStatus.Disabled.getValue()
 					|| mAuthStatus == AuthStatus.Unprotected.getValue()
 					|| mAuthStatus == AuthStatus.Authenticated.getValue()) {
@@ -354,7 +371,7 @@ public class MainActivity extends FragmentActivity {
 					// NdefFragment.setAnswer(getString(R.string.Tag_lost));
 				}
 			} else {
-				Toast.makeText(getApplicationContext(), "NTAG I2C Plus memory is protected", 
+				Toast.makeText(getApplicationContext(), "NTAG I2C Plus memory is protected",
 						Toast.LENGTH_LONG).show();
 				showAuthDialog();
 			}
@@ -371,8 +388,8 @@ public class MainActivity extends FragmentActivity {
 			try {
 				// SRAM Test
 				if ((SpeedTestFragment.isSRamEnabled() == true)) {
-					// This demo is available even if the product is protected 
-					// as long as the SRAM is unprotected  	
+					// This demo is available even if the product is protected
+					// as long as the SRAM is unprotected
 					if(mAuthStatus == AuthStatus.Disabled.getValue()
 							|| mAuthStatus == AuthStatus.Unprotected.getValue()
 							|| mAuthStatus == AuthStatus.Authenticated.getValue()
@@ -380,20 +397,20 @@ public class MainActivity extends FragmentActivity {
 							|| mAuthStatus == AuthStatus.Protected_RW.getValue()) {
 						demo.SRAMSpeedtest();
 					} else {
-						Toast.makeText(getApplicationContext(), "NTAG I2C Plus memory is protected", 
+						Toast.makeText(getApplicationContext(), "NTAG I2C Plus memory is protected",
 								Toast.LENGTH_LONG).show();
 						showAuthDialog();
 					}
 				}
 				// EEPROM Test
 				if ((SpeedTestFragment.isSRamEnabled() == false)) {
-					// This demo is only available when the tag is not protected  
+					// This demo is only available when the tag is not protected
 					if(mAuthStatus == AuthStatus.Disabled.getValue()
 							|| mAuthStatus == AuthStatus.Unprotected.getValue()
 							|| mAuthStatus == AuthStatus.Authenticated.getValue()) {
 						demo.EEPROMSpeedtest();
 					} else {
-						Toast.makeText(getApplicationContext(), "NTAG I2C Plus memory is protected", 
+						Toast.makeText(getApplicationContext(), "NTAG I2C Plus memory is protected",
 								Toast.LENGTH_LONG).show();
 						showAuthDialog();
 					}
@@ -402,9 +419,9 @@ public class MainActivity extends FragmentActivity {
 				SpeedTestFragment.setAnswer(getString(R.string.Tag_lost));
 				e.printStackTrace();
 			}
-		}		
+		}
 	}*/
-	
+
 	/*private int obtainAuthStatus() {
 		mAuthStatus = demo.ObtainAuthStatus();
 
@@ -476,13 +493,13 @@ public class MainActivity extends FragmentActivity {
 
 		startActivity(intent);
 	}
-	
+
 	/*public void showFlashDialog() {
 		Intent intent = null;
 		intent = new Intent(this, FlashMemoryActivity.class);
 		startActivity(intent);
 	}*/
-	
+
 	/*public void showAuthDialog() {
 			Intent intent = null;
 			intent = new Intent(this, AuthActivity.class);
@@ -500,7 +517,7 @@ public class MainActivity extends FragmentActivity {
 				getApplicationContext(), getClass())
 				.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 	}
-	
+
 	/**
 	 * Set the Icon that informs the user about the protection status.
 	 */
@@ -527,23 +544,23 @@ public class MainActivity extends FragmentActivity {
 	public static int getAuthStatus() {
 		return mAuthStatus;
 	}
-	
+
 	public static byte[] getPassword() {
 		return mPassword;
 	}
-	
+
 	public static Intent getNfcIntent() {
 		return mIntent;
 	}
-	
+
 	public static void setAuthStatus(int status) {
 		mAuthStatus = status;
 	}
-	
+
 	public static void setPassword(byte[] pwd) {
 		mPassword = pwd;
 	}
-	
+
 	public static void setNfcIntent(Intent intent) {
 		mIntent = intent;
 	}

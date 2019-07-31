@@ -1,0 +1,23 @@
+#Internal package file, do not edit.
+#Mon Jul 22 13:38:13 IST 2019
+2.base=/Users/navya/Desktop/App2/build/intermediates/merged_assets/debug/out
+0.path=help.html
+2.baseType=DIRECTORY
+3.base=/Users/navya/Desktop/App2/build/intermediates/merged_assets/debug/out
+2.set=ASSET
+1.path=blink.bin
+4.base=/Users/navya/Desktop/App2/build/intermediates/merged_assets/debug/out
+count=5
+2.path=demo.bin
+4.set=ASSET
+3.path=NTAG_I2C_ExplorerBoard_v1.jpg
+3.baseType=DIRECTORY
+1.set=ASSET
+4.path=debug.html
+1.baseType=DIRECTORY
+0.base=/Users/navya/Desktop/App2/build/intermediates/merged_assets/debug/out
+0.baseType=DIRECTORY
+3.set=ASSET
+1.base=/Users/navya/Desktop/App2/build/intermediates/merged_assets/debug/out
+4.baseType=DIRECTORY
+0.set=ASSET

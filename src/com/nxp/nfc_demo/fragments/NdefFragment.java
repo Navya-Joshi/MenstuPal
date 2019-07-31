@@ -27,8 +27,11 @@
  */
 package com.nxp.nfc_demo.fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -44,6 +47,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nxp.nfc_demo.activities.DatabaseHelper;
 import com.nxp.nfc_demo.activities.MainActivity;
@@ -56,43 +60,137 @@ public class NdefFragment extends Fragment implements OnClickListener,
 	private static LinearLayout ndefReadType;
 	private static TextView ndefText;
 	private static EditText ndefEditText;
-	private LinearLayout linearBt;
 	private static EditText ndefEditMac;
 	private static EditText ndefEditName;
 	private static EditText ndefEditClass;
-	private LinearLayout linearSp;
 	private static EditText ndefEditTitle;
 	private static EditText ndefEditLink;
 	private static TextView ndefTypeText;
 	private static TextView ndefCallback;
 	private static TextView ndefDataRateCallback;
+	private static CheckBox ndefReadLoop;
+	private static CheckBox addAar;
+	private static boolean writeChosen = false;
+	private static EditText volume;
+	DatabaseHelper dbHelper;
+	private LinearLayout linearBt;
+	private LinearLayout linearSp;
 	private TextView ndefPerformance;
 	private Button readNdefButton;
 	private Button writeNdefButton;
 	private Button writeDefaultNdefButton;
-	private static CheckBox ndefReadLoop;
-	private static CheckBox addAar;
-	private static boolean writeChosen = false;
 	private Button write_vol;
-	DatabaseHelper dbHelper;
-	private static EditText volume;
 
 	public static String getVolume() {
 		return volume.getText().toString();
 	}
 
+	public static void resetNdefDemo() {
+		if (writeChosen == true) {
+			setAnswer("Tap tag to write NDEF content");
+		} else {
+			setAnswer("Tap tag to read NDEF content");
+		}
+		setNdefMessage("");
+		setNdefType("");
+		setDatarate("");
+		setNdefType("");
+	}
+
+	public static String getText() {
+		return ndefEditText.getText().toString();
+	}
+
+	public static String getBtMac() {
+		return ndefEditMac.getText().toString();
+	}
+
+	public static String getBtName() {
+		return ndefEditName.getText().toString();
+	}
+
+	public static String getBtClass() {
+		return ndefEditClass.getText().toString();
+	}
+
+	public static String getSpTitle() {
+		return ndefEditTitle.getText().toString();
+	}
+
+	public static String getSpLink() {
+		return ndefEditLink.getText().toString();
+	}
+
+	public static boolean isAarRecordSelected() {
+		return addAar.isChecked();
+	}
+
+	public static boolean isNdefReadLoopSelected() {
+		return ndefReadLoop.isChecked();
+	}
+
+	public static void setAnswer(String answer) {
+		ndefCallback.setText(answer);
+	}
+
+	public static void setDatarate(String datarate) {
+		ndefDataRateCallback.setText(datarate);
+	}
+
+	public static void setNdefMessage(String answer) {
+		ndefText.setText(answer);
+	}
+
+	public static String getNdefType() {
+		int id = ndefWriteOptions.getCheckedRadioButtonId();
+		View radioButton = ndefWriteOptions.findViewById(id);
+		int radioId = ndefWriteOptions.indexOfChild(radioButton);
+		RadioButton btn = (RadioButton) ndefWriteOptions.getChildAt(radioId);
+		return (String) btn.getText();
+	}
+
+	public static void setNdefType(String type) {
+		ndefTypeText.setText(type);
+	}
+
+	public static boolean isWriteChosen() {
+		return writeChosen;
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-			setRetainInstance(true);
+		setRetainInstance(true);
 
 	}
 
+
+	//Read NFC without button
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
+	public void onResume () {
+		super.onResume();
+		MainActivity.demo.NDEFReadFinish();
+		ndefReadLoop.post(new Runnable() {
+			@Override
+			public void run() {
+				ndefReadLoop.setChecked(true);
+			}
+		});
+
+		if (MainActivity.demo.isReady()) {
+			MainActivity.demo.finishAllTasks();
+			MainActivity.launchNdefDemo(MainActivity.getAuthStatus(), MainActivity.getPassword());
+		}
+
+
+		//refresh the screen
+		//finish();
+		//startActivity(getIntent());
+
+	}
+	@Override public View onCreateView (LayoutInflater inflater, ViewGroup container,
+										Bundle savedInstanceState){
 		View layout = inflater
 				.inflate(R.layout.fragment_ndef, container, false);
 
@@ -116,23 +214,22 @@ public class NdefFragment extends Fragment implements OnClickListener,
 		writeDefaultNdefButton = (Button) layout.findViewById(R.id.writeDefaultButton);
 		addAar = (CheckBox) layout.findViewById(R.id.Add_aar_checkbox);
 		ndefReadLoop = (CheckBox) layout.findViewById(R.id.ndef_readLoop);
-		volume =(EditText) layout.findViewById(R.id.get_volume);
-//		ndefReadLoop.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//			@Override
-//			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+		volume = (EditText) layout.findViewById(R.id.get_volume);
+		ndefReadLoop.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+
 //				// Read content
 //				isChecked = true;
 //
-//					if (isChecked == true && MainActivity.demo.isReady()) {
-//					MainActivity.demo.finishAllTasks();
-//					MainActivity.launchNdefDemo(MainActivity.getAuthStatus(), MainActivity.getPassword());
-//
-//				 }
-//
-//
-//
-//			}
-//		});
+				if (isChecked == true && MainActivity.demo.isReady()) {
+					MainActivity.demo.finishAllTasks();
+					MainActivity.launchNdefDemo(MainActivity.getAuthStatus(), MainActivity.getPassword());
+
+				}
+			}
+		});
 
 		if (MainActivity.demo.isReady()) {
 			MainActivity.demo.finishAllTasks();
@@ -140,8 +237,8 @@ public class NdefFragment extends Fragment implements OnClickListener,
 		}
 
 
-		readNdefButton.setOnClickListener(this);
 
+		readNdefButton.setOnClickListener(this);
 
 
 //		write_vol= (Button) layout.findViewById(R.id.enter);
@@ -163,92 +260,90 @@ public class NdefFragment extends Fragment implements OnClickListener,
 		return layout;
 	}
 
+	public void onClick (View v){
 
-
-	public void onClick(View v) {
 
 		switch (v.getId()) {
-		case R.id.readNdefButton:
-			//Reset the values of the view
-		MainActivity.demo.NDEFReadFinish();
-		ndefPerformance.setText(getResources().getString(R.string.layout_input_ndef_read));
-		ndefCallback.setText(getResources().getString(R.string.readNdefMsg));
-		readNdefButton.setBackgroundResource(R.drawable.btn_blue);
-		writeNdefButton.setBackgroundColor(Color.BLACK);
-		ndefWriteOptions.setVisibility(View.GONE);
-		ndefReadType.setVisibility(View.VISIBLE);
-		linearBt.setVisibility(View.GONE);
-		linearSp.setVisibility(View.GONE);
-		ndefEditText.setVisibility(View.GONE);
-		ndefText.setVisibility(View.VISIBLE);
-		//ndefReadLoop.setVisibility(View.VISIBLE);
-		writeChosen = false;
+			case R.id.readNdefButton:
+				//Reset the values of the view
+				MainActivity.demo.NDEFReadFinish();
+				ndefPerformance.setText(getResources().getString(R.string.layout_input_ndef_read));
+				ndefCallback.setText(getResources().getString(R.string.readNdefMsg));
+				readNdefButton.setBackgroundResource(R.drawable.btn_blue);
+				writeNdefButton.setBackgroundColor(Color.BLACK);
+				ndefWriteOptions.setVisibility(View.GONE);
+				ndefReadType.setVisibility(View.VISIBLE);
+				linearBt.setVisibility(View.GONE);
+				linearSp.setVisibility(View.GONE);
+				ndefEditText.setVisibility(View.GONE);
+				ndefText.setVisibility(View.VISIBLE);
+				//ndefReadLoop.setVisibility(View.VISIBLE);
+				writeChosen = false;
+				ndefReadLoop.post(new Runnable() {
+					@Override
+					public void run() {
+						ndefReadLoop.setChecked(true);
+					}
+				});
 
-			ndefReadLoop.post(new Runnable() {
-				@Override
-				public void run() {
-					ndefReadLoop.setChecked(true);
-				}
-			});
-		// Read content
-		if (MainActivity.demo.isReady()) {
-			//readNdefButton.performClick();
-			MainActivity.demo.finishAllTasks();
-			MainActivity.launchNdefDemo(MainActivity.getAuthStatus(), MainActivity.getPassword());
-		}
-
-
-		// Make the writeDefaultButtons and AAR checkbox invisible
-		writeDefaultNdefButton.setVisibility(View.GONE);
-		addAar.setVisibility(View.GONE);
-
-		break;
-
-		case R.id.writeNdefButton:
-			// Make the writeDefaultButtons and AAR checkbox visible
-			writeDefaultNdefButton.setVisibility(View.VISIBLE);
-			addAar.setVisibility(View.VISIBLE);
-			ndefPerformance.setText(getResources().getString(R.string.layout_input_ndef_write));
-			ndefCallback.setText(getResources().getString(R.string.writeNdefMsg));
-			
-			// Close the ReadNdef Taks
-			MainActivity.demo.NDEFReadFinish();
-			
-			if (writeChosen == true)
-			{
+				// Read content
 				if (MainActivity.demo.isReady()) {
+					//readNdefButton.performClick();
 					MainActivity.demo.finishAllTasks();
 					MainActivity.launchNdefDemo(MainActivity.getAuthStatus(), MainActivity.getPassword());
 				}
-			}
-			else {
-				ndefCallback.setText(getResources().getString(R.string.writeNdefMsg));
-				writeNdefButton.setBackgroundResource(R.drawable.btn_blue);
-				readNdefButton.setBackgroundColor(Color.BLACK);
-				ndefWriteOptions.setVisibility(View.VISIBLE);
-				ndefReadType.setVisibility(View.GONE);
-				ndefReadLoop.setVisibility(View.GONE);
-				if (getNdefType().equals(
-						getResources().getString(R.string.radio_btpair))) {
-					linearBt.setVisibility(View.VISIBLE);
-					linearSp.setVisibility(View.GONE);
-					ndefEditText.setVisibility(View.GONE);
-				} else if (getNdefType().equals(
-						getResources().getString(R.string.radio_sp))) {
-					linearBt.setVisibility(View.GONE);
-					linearSp.setVisibility(View.VISIBLE);
-					ndefEditText.setVisibility(View.GONE);
-				} else {
-					linearBt.setVisibility(View.GONE);
-					linearSp.setVisibility(View.GONE);
-					ndefEditText.setVisibility(View.VISIBLE);
-				}
-				ndefText.setVisibility(View.GONE);
-				writeChosen = true;
-			}
 
-			break;
-			
+
+				// Make the writeDefaultButtons and AAR checkbox invisible
+				writeDefaultNdefButton.setVisibility(View.GONE);
+				addAar.setVisibility(View.GONE);
+
+
+				break;
+
+			case R.id.writeNdefButton:
+				// Make the writeDefaultButtons and AAR checkbox visible
+				writeDefaultNdefButton.setVisibility(View.VISIBLE);
+				addAar.setVisibility(View.VISIBLE);
+				ndefPerformance.setText(getResources().getString(R.string.layout_input_ndef_write));
+				ndefCallback.setText(getResources().getString(R.string.writeNdefMsg));
+
+				// Close the ReadNdef Taks
+				MainActivity.demo.NDEFReadFinish();
+
+				if (writeChosen == true) {
+					if (MainActivity.demo.isReady()) {
+						MainActivity.demo.finishAllTasks();
+						MainActivity.launchNdefDemo(MainActivity.getAuthStatus(), MainActivity.getPassword());
+					}
+				} else {
+					ndefCallback.setText(getResources().getString(R.string.writeNdefMsg));
+					writeNdefButton.setBackgroundResource(R.drawable.btn_blue);
+					readNdefButton.setBackgroundColor(Color.BLACK);
+					ndefWriteOptions.setVisibility(View.VISIBLE);
+					ndefReadType.setVisibility(View.GONE);
+					ndefReadLoop.setVisibility(View.GONE);
+					if (getNdefType().equals(
+							getResources().getString(R.string.radio_btpair))) {
+						linearBt.setVisibility(View.VISIBLE);
+						linearSp.setVisibility(View.GONE);
+						ndefEditText.setVisibility(View.GONE);
+					} else if (getNdefType().equals(
+							getResources().getString(R.string.radio_sp))) {
+						linearBt.setVisibility(View.GONE);
+						linearSp.setVisibility(View.VISIBLE);
+						ndefEditText.setVisibility(View.GONE);
+					} else {
+						linearBt.setVisibility(View.GONE);
+						linearSp.setVisibility(View.GONE);
+						ndefEditText.setVisibility(View.VISIBLE);
+					}
+					ndefText.setVisibility(View.GONE);
+					writeChosen = true;
+				}
+
+				break;
+
 			case R.id.writeDefaultButton:
 				ndefCallback.setText(getResources()
 						.getString(R.string.writeNdefMsg));
@@ -266,21 +361,22 @@ public class NdefFragment extends Fragment implements OnClickListener,
 				ndefText.setVisibility(View.GONE);
 				addAar.setChecked(true);
 				writeChosen = true;
-	
+
 				// Write content
 				if (MainActivity.demo.isReady()) {
 					MainActivity.demo.finishAllTasks();
 					MainActivity.launchNdefDemo(MainActivity.getAuthStatus(),
-                            MainActivity.getPassword());
+							MainActivity.getPassword());
 				}
 				break;
-		default:
-			break;
+			default:
+				break;
 		}
 	} // END onClick (View v)
 
+
 	@Override
-	public void onCheckedChanged(RadioGroup group, int checkedId) {
+	public void onCheckedChanged (RadioGroup group,int checkedId){
 		if (checkedId == R.id.radioNdefText) {
 			ndefEditText.setVisibility(View.VISIBLE);
 			ndefEditText.setText("");
@@ -302,78 +398,5 @@ public class NdefFragment extends Fragment implements OnClickListener,
 			ndefEditLink.setText("http://www.");
 		}
 	}
-	
-	public static void resetNdefDemo() {
-		if (writeChosen == true) {
-            setAnswer("Tap tag to write NDEF content");
-        } else {
-            setAnswer("Tap tag to read NDEF content");
-        }
-		setNdefMessage("");
-		setNdefType("");
-		setDatarate("");
-		setNdefType("");
-	}
-
-
-
-	public static String getText() {
-		return ndefEditText.getText().toString();
-	}
-
-	public static String getBtMac() {
-		return ndefEditMac.getText().toString();
-	}
-
-	public static String getBtName() {
-		return ndefEditName.getText().toString();
-	}
-
-	public static String getBtClass() {
-		return ndefEditClass.getText().toString();
-	}
-	
-	public static String getSpTitle() {
-		return ndefEditTitle.getText().toString();
-	}
-	
-	public static String getSpLink() {
-		return ndefEditLink.getText().toString();
-	}
-
-	public static boolean isAarRecordSelected() {
-		return addAar.isChecked();
-	}
-	
-	public static boolean isNdefReadLoopSelected() {
-		return ndefReadLoop.isChecked();
-	}
-	
-	public static void setAnswer(String answer) {
-		ndefCallback.setText(answer);
-	}
-	
-	public static void setDatarate(String datarate) {
-		ndefDataRateCallback.setText(datarate);
-	}
-
-	public static void setNdefType(String type) {
-		ndefTypeText.setText(type);
-	}
-
-	public static void setNdefMessage(String answer) {
-		ndefText.setText(answer);
-	}
-
-	public static String getNdefType() {
-		int id = ndefWriteOptions.getCheckedRadioButtonId();
-		View radioButton = ndefWriteOptions.findViewById(id);
-		int radioId = ndefWriteOptions.indexOfChild(radioButton);
-		RadioButton btn = (RadioButton) ndefWriteOptions.getChildAt(radioId);
-		return (String) btn.getText();
-	}
-
-	public static boolean isWriteChosen() {
-		return writeChosen;
-	}
 }
+

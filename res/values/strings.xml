@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
 ****************************************************************************
 * Copyright(c) 2014 NXP Semiconductors                                     *
 * All rights are reserved.                                                 *
@@ -46,19 +45,19 @@
     <string name="blue">Blue</string>
     <string name="green">Green</string>
     <string name="off">OFF</string>
-    
+
     <string name="demo_not_supported_title"> Demo not supported </string>
     <string name="demo_not_supported"> This demo is not supported for this NFC Device with this Tag </string>
     <string name="tag_not_supported_title"> Invalid Tag </string>
     <string name="tag_not_supported"> This demo is only supported by NTAG I<sup><small>2</small></sup>C Plus Tag </string>
 
-	<string name="flash_memory_app">Select from Appl.</string>
-	<string name="flash_memory_storage">Select from Storage</string>
-	<string name="flash_app_select">Select Firmware to Flash</string>
-	<string name="flash_file">Current File: </string>
-	<string name="file_default_demo">Demo App (Embedded in apk) </string>
-	<string name="file_default_blinker">LED Blinker (Embedded in apk) </string>
-	<string name="flash_hint">Keep right button pressed </string>
+    <string name="flash_memory_app">Select from Appl.</string>
+    <string name="flash_memory_storage">Select from Storage</string>
+    <string name="flash_app_select">Select Firmware to Flash</string>
+    <string name="flash_file">Current File: </string>
+    <string name="file_default_demo">Demo App (Embedded in apk) </string>
+    <string name="file_default_blinker">LED Blinker (Embedded in apk) </string>
+    <string name="flash_hint">Keep right button pressed </string>
     <string name="leds">DEMO</string>
     <string name="ndefs">NDEF</string>
     <string name="ntag_rf_text">SPEED</string>
@@ -232,7 +231,7 @@
     <string name="I2C_CLOCK_STR_OFF">I<sup><small>2</small></sup>C Clock stretching is: OFF</string>
     <string name="ResetType_RF">Memory Reset (RF)</string>
     <string name="ResetType_I2C">Full Reset (I<sup><small>2</small></sup>C, Demoboard needed)</string>
-    
+
     <string name="Select_Password">Select Password</string>
     <string name="Password_1">SUN</string>
     <string name="Password_2">STAR</string>
@@ -244,11 +243,12 @@
     <string name="Auth_authenticated">Authenticated</string>
     <string name="Dialog_disable_auth_title"> Disable Protection</string>
     <string name="Dialog_disable_auth_msg"> Are you sure to disable protection? </string>
-    
+
     <string name="note_pwdandpacknotaccessible">* PWD and PACK not accessible</string>
     <string name="Dialog_enable_auth_title"> Enable Protection</string>
     <string name="Dialog_enable_auth_msg"> Are you sure to enable protection?</string>
-    
+    <string name="logo">LOGO</string>
+
     <string-array name="ResetType_Options">
         <item>@string/ResetType_RF</item>
         <item>@string/ResetType_I2C</item>
